@@ -6,83 +6,113 @@
 
 import argparse
 import random
+import string
+import binary
+
+def str2Bits(str_input):
+    """Converts string s to a string containing only 0s or 1s,
+    representing the original string."""
+    result = []
+    for c in s:
+        bits = bin(ord(c))[2:]
+        bits = '00000000'[len(bits):] + bits
+        result.extend([int(b) for b in bits])
+    return result
+
+	
+def bits2Str(bits_input):
+	"""Convert bin sequence to string, to show the cipher text or decrypt text"""
+    chars = []
+    for b in range(len(bits) / 8):
+        byte = bits[b*8:(b+1)*8]
+        chars.append(chr(int(''.join([str(bit) for bit in byte]), 2)))
+    return ''.join(chars)
 
 
-def charToNum(char):
-    alphabet = "abcdefghijklmnopqrstuvwxyz"
-    num = 1
-    for letter in alphabet:
-        if letter == char:
-            break
-        else:
-            num+=1
-    return num
-
-
-def numToChar(num):
-    alphabet = "abcdefghijklmnopqrstuvwxyz"
-    return alphabet[num+1]
-
-
-def str2Bin(str):
-
-
-def bin2Str(bin):
-
-
-def xor(m, k):
-    """Given strings m and k of characters 0 or 1,
-    it returns the string representing the XOR
-    between each character in the same position.
-    This means that m and k should be of the same length.
-
-    Use this function both for encrypting and decrypting!"""
-    r = []
-    for i, j in zip(m, k):
-        r.append(str(int(i) ^ int(j)))  # xor between bits i and j
-    return "".join(r)
-
-
-def KeyGen():
+def KeyGen(n):
 	'''
 		Description: Generates a random key of bits (with 0s or 1s) of length n
-		Input: 
-		Output: 
+		Input: key length n
+		Output: binary key
 	'''
-	    k = []
+	k = []
     for i in range(n):
         k.append(random.choice(["0", "1"]))
-    return "".join(k)
+    return k
 
-def Enc():
+	
+def Enc(msg, k):
 	'''
-		Description: 
-		Input: 
-		Output: 	
+		Description: using key to encode plaintext message to ciphertext
+		Input: plaintext msg, binary key
+		Output: ciphertext
 	'''
+	count = 0
+	bMsg = str2Bits(msg)
+	mLen = len(bMsg)
+	for i in range(mLen):
+		count = count % len(key)	
+		elem = bMsg[i]
+		tmp = elem ^ k[count]
+		bMsg[i] = tmp
+		count = count + 1
+	
+	cipher = bits2Str(bMsg)
+	return cipher
+		
 
 
-def Dec():
+def Dec(cipher, key):
 	'''
-		Description:
-		Input: 
-		Output: 
+		Description: using key to decode ciphertext to plaintext
+		Input: ciphertext and key
+		Output: plaintext
 	'''
+	count = 0
+	bCipher = str2Bits(cipher)
+	cLen = len(bCipher)
+	for i in range(cLen):
+		count = count % len(key)
+		elem = bCipher[i]
+		tmp = elem ^ k[count]
+		bCipher[i] = tmp
+		count = count + 1
+	
+	msg = bits2Str(bCipher)
+	return msg
 
+
+def saveData(fname, text):
+	with open(fname, 'w') as f:
+		f.write(text)
+		
+def readData(fname):
+	with open(fname, 'r') as f:
+		return f.read()
 
 def main(opts, args):
-	print("hello world")
+	if 'genKey' == opts:
+		KeyGen(args.length)
+	elif '' == opts:
+		Enc(msg, key)
+	elif '' == opts:
+		Dec(msg, key)
+	else:
+		print("input is not allowed.)
 	
 
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Process input opts and args.')
-	parser.add_argument('function', dest='function',
-						help='an integer for the accumulator')
-	parser.add_argument('-s', '--sourceFile', dest='source',
+	parser.add_argument('-f', '--function', dest='function',
+						help='choose among encode/decode/genKey')
+	parser.add_argument('-k', '--keyFile', dest='key',
+						help='source input file/files, specify multipal time will enter multipal value')
+	parser.add_argument('-p', '--plaintextFile', dest='source',
 						help='source input file/files, specify multipal time will enter multipal value')
 	parser.add_argument('-t', '--targetFile', dest='target',
 						help='target output file')
 	args = parser.parse_args()
+	
 	print(args.accumulate(args.integers))
 	
 	main(opts, args)
